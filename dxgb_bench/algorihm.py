@@ -51,6 +51,19 @@ class XgbDaskCpuApprox(XgbDaskBase):
         self.parameters['tree_method'] = 'approx'
 
 
+class XgbSingleNodeBase:
+    def __init__(self, parameters, rounds):
+        self.parameters = parameters
+        self.rounds = rounds
+
+
+class XgbGpuHist(XgbSingleNodeBase):
+    def __init__(self, parameters, rounds):
+        super().__init__(parameters, rounds)
+        self.name = 'xgboost-gpu-hist'
+        self.parameters['tree_method'] = 'gpu_hist'
+
+
 def factory(name, task, client, args):
     parameters = {
         'max_depth': 8,
@@ -63,3 +76,6 @@ def factory(name, task, client, args):
         return XgbDaskCpuHist(parameters, args.rounds, client)
     elif name == 'xgboost-dask-cpu-approx':
         return XgbDaskCpuApprox(parameters, args.rounds, client)
+    # single node algorithms.
+    elif name == 'xgboost-gpu-hist':
+        return XgbGpuHist(parameters, args.rounds)

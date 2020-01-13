@@ -45,11 +45,7 @@ def print_version():
     fprint()
 
 
-def main(args):
-    print_version()
-    if not os.path.exists(args.temporary_directory):
-        os.mkdir(args.temporary_directory)
-
+def distributed_benchmark(args):
     def cluster_type(*user_args, **kwargs):
         if args.device == 'CPU':
             return LocalCluster(*user_args, **kwargs)
@@ -83,6 +79,25 @@ def main(args):
                 print('dashboard link:', cluster.dashboard_link)
                 with Client(cluster) as client:
                     run_benchmark(client)
+
+
+def single_node_benchmark(args):
+    (X, y, w), task = data_factory(args.data, args)
+    assert args.backend == 'cudf' or args.backend == 'pandas'
+    algo = algorihm.factory(args.algo, task, None, args)
+    algo.fit(X, y, w)
+    raise NotImplementedError()
+
+
+def main(args):
+    print_version()
+    if not os.path.exists(args.temporary_directory):
+        os.mkdir(args.temporary_directory)
+
+    if args.distributed:
+        distributed_benchmark(args)
+    else:
+        single_node_benchmark(args)
 
     if not os.path.exists(args.output_directory):
         os.mkdir(args.output_directory)
@@ -153,6 +168,10 @@ if __name__ == '__main__':
                         type=str,
                         help='Data loading backend.',
                         default='dask_cudf')
+    parser.add_argument('--distributed',
+                        type=bool,
+                        default=True,
+                        help='Run on distributed environment or not.')
     args = parser.parse_args()
     try:
         main(args)

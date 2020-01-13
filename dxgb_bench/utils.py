@@ -9,6 +9,8 @@ from dask import dataframe as dd
 import dask_cudf
 import cudf
 
+import pandas
+
 
 def fprint(*args, **kwargs):
     print(*args, **kwargs)
@@ -33,6 +35,9 @@ def read_csv(path, sep, dtype, header, names, backend,
     elif backend == 'cudf':
         df = cudf.read_csv(path, delimiter=sep, dtype=dtype, header=None,
                            names=names)
+    elif backend == 'pandas':
+        df = pandas.read_csv(path, delimiter=sep, dtype=dtype, header=None,
+                             names=names)
     else:
         df = None
         raise ValueError('Unknown read_csv backend:', backend)
